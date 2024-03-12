@@ -14,7 +14,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
-import edu.wpi.first.wpilibj.Encoder;
+//import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import frc.robot.Constants.DriveConstants;
@@ -24,20 +24,24 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+//import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+//import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 
 public class Drive extends SubsystemBase {
 
- /*  // The motors on the left side of the drive.
-  private final CANSparkMax m_leftFrontMotor = new CANSparkMax(DriveConstants.kLeftFrontMotorPort, MotorType.kBrushed);
-  private final CANSparkMax m_leftBackMotor = new CANSparkMax(DriveConstants.kLeftBackMotorPort, MotorType.kBrushed);
+  // The motors on the left side of the drive.
+  private final CANSparkMax m_leftFrontMotor = new CANSparkMax(DriveConstants.kLeftFrontMotorPort, MotorType.kBrushless);
+  private final CANSparkMax m_leftBackMotor = new CANSparkMax(DriveConstants.kLeftBackMotorPort, MotorType.kBrushless);
 
   // The motors on the right side of the drive.
-  private final CANSparkMax m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushed);
-  private final CANSparkMax m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushed);
-*/
+  private final CANSparkMax m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushless);
+  private final CANSparkMax m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushless);
+/*/
     // The motors on the left side of the drive.
   private final WPI_TalonSRX m_leftFrontMotor = new WPI_TalonSRX(DriveConstants.kLeftFrontMotorPort);
   private final WPI_VictorSPX m_leftBackMotor = new WPI_VictorSPX(DriveConstants.kLeftBackMotorPort);
@@ -45,11 +49,12 @@ public class Drive extends SubsystemBase {
   // The motors on the right side of the drive.
   private final WPI_TalonSRX m_rightFrontMotor = new WPI_TalonSRX(DriveConstants.kRightFrontMotorPort);
   private final WPI_VictorSPX m_rightBackMotor = new WPI_VictorSPX(DriveConstants.kRightBackMotorPort);
-
+*/
   // The robot's drive
   private final MecanumDrive m_drive =
       new MecanumDrive(m_leftFrontMotor::set, m_leftBackMotor::set, m_rightFrontMotor::set, m_rightBackMotor::set);
 
+  /*    
   // The left-side drive encoder
   private final Encoder m_leftFrontEncoder =
       new Encoder(
@@ -75,6 +80,16 @@ public class Drive extends SubsystemBase {
           DriveConstants.kRightBackEncoderPorts[0],
           DriveConstants.kRightBackEncoderPorts[1],
           DriveConstants.kRightFrontEncoderReversed);
+*/
+  // The left-side drive encoder
+  private RelativeEncoder m_leftFrontEncoder;
+  private RelativeEncoder m_leftBackEncoder;
+
+  // The right-side drive encoder
+  private RelativeEncoder m_rightFrontEncoder;
+  private RelativeEncoder m_rightBackEncoder;
+
+  
 
   // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
   private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
@@ -83,11 +98,15 @@ public class Drive extends SubsystemBase {
   // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
   private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
 
+
   // Create a new SysId routine for characterizing the drive.
   private final SysIdRoutine m_sysIdRoutine =
       new SysIdRoutine(
+
+      
           // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
           new SysIdRoutine.Config(),
+
           new SysIdRoutine.Mechanism(
               // Tell SysId how to plumb the driving voltage to the motors.
               (Measure<Voltage> volts) -> {
@@ -96,65 +115,74 @@ public class Drive extends SubsystemBase {
                 m_rightFrontMotor.setVoltage(volts.in(Volts));
                 m_rightBackMotor.setVoltage(volts.in(Volts));
               },
+
               // Tell SysId how to record a frame of data for each motor on the mechanism being
               // characterized.
               log -> {
-                // Record a frame for the left motors.  Since these share an encoder, we consider
-                // the entire group to be one motor.
+                // Record a frame for the left front motors.
                 log.motor("drive-leftFront")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            m_leftFrontMotor.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(m_leftFrontEncoder.getDistance(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(m_leftFrontEncoder.getRate(), MetersPerSecond));
+                    .voltage(m_appliedVoltage.mut_replace(m_leftFrontMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                    .linearPosition(m_distance.mut_replace(m_leftFrontEncoder.getPosition(), Meters))
+                    .linearVelocity(m_velocity.mut_replace(m_leftFrontEncoder.getVelocity(), MetersPerSecond));
+
+                // Record a frame for the left back motors.               
                 log.motor("drive-leftBack")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            m_leftBackMotor.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(m_leftBackEncoder.getDistance(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(m_leftBackEncoder.getRate(), MetersPerSecond));
+                    .voltage(m_appliedVoltage.mut_replace(m_leftBackMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                    .linearPosition(m_distance.mut_replace(m_leftBackEncoder.getPosition(), Meters))
+                    .linearVelocity(m_velocity.mut_replace(m_leftBackEncoder.getVelocity(), MetersPerSecond));
 
-
-                // Record a frame for the right motors.  Since these share an encoder, we consider
-                // the entire group to be one motor.
+                // Record a frame for the right front motors. 
                 log.motor("drive-rightFront")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            m_rightFrontMotor.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(m_rightFrontEncoder.getDistance(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(m_rightFrontEncoder.getRate(), MetersPerSecond));
+                    .voltage(m_appliedVoltage.mut_replace(m_rightFrontMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                    .linearPosition(m_distance.mut_replace(m_rightFrontEncoder.getPosition(), Meters))
+                    .linearVelocity(m_velocity.mut_replace(m_rightFrontEncoder.getVelocity(), MetersPerSecond));
 
+                // Record a frame for the right back motors.
                 log.motor("drive-rightBack")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            m_rightBackMotor.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(m_rightBackEncoder.getDistance(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(m_rightBackEncoder.getRate(), MetersPerSecond));
-
+                    .voltage(m_appliedVoltage.mut_replace(m_rightBackMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                    .linearPosition(m_distance.mut_replace(m_rightBackEncoder.getPosition(), Meters))
+                    .linearVelocity(m_velocity.mut_replace(m_rightBackEncoder.getVelocity(), MetersPerSecond));
               },
+
               // Tell SysId to make generated commands require this subsystem, suffix test state in
               // WPILog with this subsystem's name ("drive")
-              this));
+              this)
+      );
+
 
   /** Creates a new Drive subsystem. */
   public Drive() {
+    m_leftFrontEncoder = m_leftFrontMotor.getEncoder();
+    m_leftBackEncoder = m_leftBackMotor.getEncoder();
+    m_rightFrontEncoder = m_rightFrontMotor.getEncoder();
+    m_rightBackEncoder = m_rightBackMotor.getEncoder();
 
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    m_rightFrontMotor.setInverted(true);
-    m_rightBackMotor.setInverted(true);
+    m_leftFrontMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_leftBackMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_rightFrontMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_rightBackMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-    // Sets the distance per pulse for the encoders
-    m_leftFrontEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_leftBackEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rightFrontEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rightBackEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    m_leftFrontMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 20);
+    m_leftBackMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 20);
+    m_rightFrontMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 20);
+    m_rightBackMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 20);
 
+    m_leftFrontMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    m_leftBackMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    m_rightFrontMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    m_rightBackMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    
+
+    //initialize encoder positions ?necessary?
+    m_leftFrontEncoder.setPosition(0.0);
+    m_leftBackEncoder.setPosition(0.0);
+    m_rightFrontEncoder.setPosition(0.0);
+    m_rightBackEncoder.setPosition(0.0);
+
+    m_leftFrontEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
+    m_leftBackEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
+    m_rightFrontEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
+    m_rightBackEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
     
   }
 
@@ -171,6 +199,8 @@ public class Drive extends SubsystemBase {
         .withName("arcadeDrive");
 
   }
+
+
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.quasistatic(direction);

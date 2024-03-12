@@ -21,17 +21,17 @@ public final class Constants {
     public static final int kRightFrontMotorPort = 22;
     public static final int kRightBackMotorPort = 23;
 
-    public static final int[] kLeftFrontEncoderPorts = {0, 1};
-    public static final int[] kLeftBackEncoderPorts = {2,3};
-    public static final int[] kRightFrontEncoderPorts = {4, 5};
-    public static final int[] kRightBackEncoderPorts = {6,7};
-    public static final boolean kLeftFrontEncoderReversed = false;
-    public static final boolean kLeftBackEncoderReversed = false;
-    public static final boolean kRightFrontEncoderReversed = true;
-    public static final boolean kRightBackEncoderReversed = true;
+    //public static final int[] kLeftFrontEncoderPorts = {0, 1};
+    //public static final int[] kLeftBackEncoderPorts = {2,3};
+    //public static final int[] kRightFrontEncoderPorts = {4, 5};
+    //public static final int[] kRightBackEncoderPorts = {6,7};
+    //public static final boolean kLeftFrontEncoderReversed = false;
+    //public static final boolean kLeftBackEncoderReversed = false;
+    //public static final boolean kRightFrontEncoderReversed = true;
+    //public static final boolean kRightBackEncoderReversed = true;
 
-    public static final double kEncoderCPRraw = 80.0;
-    public static final double kGearRatio = 12.75;
+    public static final double kEncoderCPRraw = 4096.; // should this be 42?
+    public static final double kGearRatio = 8.25;
     public static final double kEncoderCPR = kEncoderCPRraw * kGearRatio;
     public static final double kWheelDiameterMeters = Units.inchesToMeters(6);
     public static final double kEncoderDistancePerPulse =
