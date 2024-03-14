@@ -49,11 +49,11 @@ public class SysIdRoutineBot {
     autoChooser.addOption("Dynamic Fwd", m_drive.sysIdDynamic(SysIdRoutine.Direction.kForward).withTimeout(4));
     autoChooser.addOption("Dynamic Rev", m_drive.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(4));
     autoChooser.addOption("Full Test", m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withTimeout(4)
-                                            .andThen(m_drive.doNothing())
+                                            //.andThen(m_drive.doNothing())
                                             .andThen(m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withTimeout(4))
-                                            .andThen(m_drive.doNothing())
+                                            //.andThen(m_drive.doNothing())
                                             .andThen(m_drive.sysIdDynamic(SysIdRoutine.Direction.kForward).withTimeout(4))
-                                            .andThen(m_drive.doNothing())
+                                            //.andThen(m_drive.doNothing())
                                             .andThen(m_drive.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(4)));
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }

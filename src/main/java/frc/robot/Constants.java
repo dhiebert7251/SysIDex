@@ -31,7 +31,7 @@ public final class Constants {
     //public static final boolean kRightBackEncoderReversed = true;
 
     public static final double kEncoderCPRraw = 4096.; // should this be 42?
-    public static final double kGearRatio = 8.25;
+    public static final double kGearRatio = 8.45;
     public static final double kEncoderCPR = kEncoderCPRraw * kGearRatio;
     public static final double kWheelDiameterMeters = Units.inchesToMeters(6);
     public static final double kEncoderDistancePerPulse =
