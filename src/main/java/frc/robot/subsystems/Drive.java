@@ -41,6 +41,8 @@ public class Drive extends SubsystemBase {
   // The motors on the right side of the drive.
   private final CANSparkMax m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushless);
   private final CANSparkMax m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushless);
+
+  
 /*/
     // The motors on the left side of the drive.
   private final WPI_TalonSRX m_leftFrontMotor = new WPI_TalonSRX(DriveConstants.kLeftFrontMotorPort);
@@ -172,12 +174,18 @@ public class Drive extends SubsystemBase {
     m_rightFrontMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
     m_rightBackMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
     
+    m_leftFrontMotor.setInverted(true);
+    m_leftBackMotor.setInverted(true);
+    m_rightFrontMotor.setInverted(false);
+    m_rightBackMotor.setInverted(false);
 
     //initialize encoder positions ?necessary?
+   /*
     m_leftFrontEncoder.setPosition(0.0);
     m_leftBackEncoder.setPosition(0.0);
     m_rightFrontEncoder.setPosition(0.0);
     m_rightBackEncoder.setPosition(0.0);
+```*/
 
     m_leftFrontEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
     m_leftBackEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerPulse);
@@ -195,7 +203,7 @@ public class Drive extends SubsystemBase {
   public Command arcadeDriveCommand(DoubleSupplier fwd, DoubleSupplier strafe, DoubleSupplier rot) {
     // A split-stick arcade command, with forward/backward controlled by the left
     // hand, and turning controlled by the right.
-    return run(() -> m_drive.driveCartesian(fwd.getAsDouble(), strafe.getAsDouble(), rot.getAsDouble()))
+    return run(() -> m_drive.driveCartesian(-fwd.getAsDouble(),strafe.getAsDouble() , rot.getAsDouble()))
         .withName("arcadeDrive");
 
   }

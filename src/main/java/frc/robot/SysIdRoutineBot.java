@@ -46,8 +46,8 @@ public class SysIdRoutineBot {
     autoChooser.setDefaultOption("Do Nothing", null);
     autoChooser.addOption("Quasi Fwd", m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withTimeout(4));
     autoChooser.addOption("Quasi Rev", m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withTimeout(4));
-    autoChooser.addOption("Dynamic Fwd", m_drive.sysIdDynamic(SysIdRoutine.Direction.kForward).withTimeout(4));
-    autoChooser.addOption("Dynamic Rev", m_drive.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(4));
+    autoChooser.addOption("Dynamic Fwd", m_drive.sysIdDynamic(SysIdRoutine.Direction.kForward).withTimeout(2));
+    autoChooser.addOption("Dynamic Rev", m_drive.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(2));
     autoChooser.addOption("Full Test", m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withTimeout(4)
                                             //.andThen(m_drive.doNothing())
                                             .andThen(m_drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withTimeout(4))
